@@ -1,3 +1,85 @@
+#' Compute convolution function using FFT
+#' @description Compute convolution function using FFT, similar to \code{'conv'} in matlab
+#' @references Matlab document on \code{'conv'}: \url{https://www.mathworks.com/help/matlab/ref/conv.html}
+#' @param u numerical vector
+#' @param v numerical vector, don't need to have the same length as \code{u}
+#' @param shape if 'same', return central part of the convolution and has the same size as \code{u};
+#'              otherwise return the whole sequence of size \eqn{lenth(u)+length(v)-1}.
+#'
+#' @return a vector of convolution, as specified by shape.
+#' @export
+#' @examples
+#' u = c(-1,2,3,-2,0,1,2)
+#' v = c(2,4,-1,1)
+#' w = conv(u,v,'same')
+conv = function(u, v, shape = c("same","full")){
+  shape <- match.arg(shape)
+  lx <- length(u)
+  ly <- length(v)
+  n <- lx + ly - 1
+  w <- fft(fft(c(u,rep(0,n-lx))) * fft(c(v,rep(0,n-ly))),inverse=TRUE)/n
+  w <- Re(w)
+  if(shape=="same") w <- w[floor(ly/2+1):(floor(ly/2)+lx)]
+  return(w)
+}
+
+#' Smoothing data using Gaussian kernel
+#'
+#' @param x numeric vector of values to smooth
+#' @param gamma bandwidth of Gaussian kernel
+#'
+#' @return vector of smoothed values
+#' @export
+#' @examples
+#' smth.gau(x=rnorm(1000), gamma=20)
+#'
+smth.gau = function(x, gamma){
+  # Gaussian kernel
+  .kern = function(x,v=1){
+    temp = exp(-x^2/(2*v^2))
+    return(temp/sum(temp))}
+  k = ifelse(2*6*gamma <= 0.9*length(x),6,floor(0.9*length(x)/(2*gamma))) #6sigma
+  Lwindow = (-k*gamma):(k*gamma)
+  w = .kern(Lwindow,v=gamma)
+  sx = conv(x,w,"same")
+  # adjusted weights
+  adj.w = function(w){
+    hw = floor(length(w)/2)
+    a = cumsum(w)[(hw+1):length(w)]
+    return(c(a,rep(1,length(x)-2*length(a)),rev(a)))
+  }
+  return(sx/adj.w(w))
+}
+
+#' Find local maxima and local minima of data sequence
+#'
+#' @param x numerical vector contains local maxima (minima)
+#' @param partial logical value indicating if the two endpoints will be considered
+#' @param decreasing logical value indicating whether to find local minima
+#'
+#' @return a vector of locations of local maxima or minima
+#' @export
+#'
+#' @examples
+#' a = 100:1
+#' which.peaks(a*sin(a/3))
+#'
+which.peaks = function(x, partial=FALSE, decreasing=FALSE){
+  if (decreasing){
+    if (partial){
+      which(diff(c(FALSE,diff(x)>0,TRUE))>0)
+    }else {
+      which(diff(diff(x)>0)>0)+1
+    }
+  }else {
+    if (partial){
+      which(diff(c(TRUE,diff(x)>=0,FALSE))<0)
+    }else {
+      which(diff(diff(x)>=0)<0)+1
+    }
+  }
+}
+
 #' Gaussiann process peak height
 #'
 #' Simulate the peak height and its density of the smoothed Gaussian process
@@ -7,6 +89,7 @@
 #' @param add.density logical value indicates if density function should be plotted
 #' @param ... arguments in \code{rnorm}, such as mean, sd
 #' @returns location of peaks, plots of peak height and its density
+#' @export
 #' @examples
 #' simu_peak_height(n = 100, add.height = TRUE, add.density = TRUE)
 #'
@@ -50,6 +133,7 @@ simu_peak_height = function(n = 100, gamma = 4, add.height = TRUE, add.density =
 #' @param data a vector
 #' @param u a user-specified thereshold value.
 #' @param n number to data points to fit the cureve of \code{data}.
+#' @export
 #' @returns locations of cross points
 #'
 cross_point = function(data, u, n=10000) {
@@ -71,6 +155,7 @@ cross_point = function(data, u, n=10000) {
 #'
 #' @param x a numerical vector
 #' @returns a matrix with two columns of x and tail probability \eqn{F(x)}
+#' @export
 #'
 ecdf.tail = function(x){
   fecdf = ecdf(x)
@@ -84,6 +169,7 @@ ecdf.tail = function(x){
 #' @inheritParams cross_point
 #' @param data a numerical vector
 #' @returns distance of a peak to its left and right endpoints
+#' @export
 #'
 search_endpoint = function(x, u, data){
   # left-direction search
@@ -104,6 +190,7 @@ search_endpoint = function(x, u, data){
 #' @param x vector of quantiles
 #' @inheritParams cross_point
 #' @returns density of peak extent
+#' @export
 #'
 fx = function(x, u) {
   lam1 <- 1/(2 * gamma^2)
@@ -127,6 +214,7 @@ fx = function(x, u) {
 #' @inheritParams fx
 #' @seealso [fx]
 #' @returns right-tail probability of peak extent
+#' @export
 #'
 Fx = function(x, u) {
   lam1 <- 1/(2 * gamma^2)
@@ -147,6 +235,7 @@ Fx = function(x, u) {
 #' @inheritParams fx
 #' @inheritParams fx
 #' @returns density of peak mass
+#' @export
 #'
 gv = function(v, u) {
   lam1 <- 1/(2 * gamma^2)
@@ -168,6 +257,7 @@ gv = function(v, u) {
 #' @inheritParams fx
 #' @seealso [gv]
 #' @returns right-tail probability of peak height
+#' @export
 #'
 Gv = function(V, u) {
   lam1 <- 1/(2 * gamma^2)
@@ -202,6 +292,7 @@ Gv = function(V, u) {
 #' @param add.cdf logical value indicates if plot the right tail probability distribution
 #' @param ... arguments in \code{rnorm}, such as mean, sd
 #' @returns locations of cross points, plots of peak extent and its right-tail probability
+#' @export
 #' @seealso [cross_point], [search_endpoint]
 #' @examples
 #' simu_peak_extent(n = 100, u = 3.5)
@@ -260,6 +351,7 @@ simu_peak_extent = function(n = 100, gamma = 4, u, add.extent = TRUE,
 #' @inheritParams search_endpoint
 #' @inheritParams search_endpoint
 #' @returns a vector of area under the curve
+#' @export
 #' @seealso [search_endpoint]
 #'
 auc = function(x, u, data){
@@ -282,6 +374,7 @@ auc = function(x, u, data){
 #' @param alpha significant level for peak detection
 #' @param ... arguments in \code{rnorm}, such as mean, sd
 #' @returns locations of cross points, plots of peak extent and its right-tail probability
+#' @export
 #' @seealso [cross_point], [search_endpoint]
 #' @examples
 #' loc=c(100,250,400,650,800,900)
