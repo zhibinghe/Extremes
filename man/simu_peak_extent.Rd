@@ -26,6 +26,8 @@ simu_peak_extent(
 \item{add.density}{logical value indicates if density function should be plotted}
 
 \item{add.cdf}{logical value indicates if plot the right tail probability distribution}
+
+\item{...}{arguments in \code{rnorm}, such as mean, sd}
 }
 \value{
 locations of cross points, plots of peak extent and its right-tail probability

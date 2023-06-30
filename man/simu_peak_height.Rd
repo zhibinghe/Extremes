@@ -20,6 +20,8 @@ simu_peak_height(
 \item{add.height}{logical value indicates if peak height should be plotted}
 
 \item{add.density}{logical value indicates if density function should be plotted}
+
+\item{...}{arguments in \code{rnorm}, such as mean, sd}
 }
 \value{
 location of peaks, plots of peak height and its density
@@ -28,7 +30,6 @@ location of peaks, plots of peak height and its density
 Simulate the peak height and its density of the smoothed Gaussian process
 }
 \examples{
-library(dSTEM)
 simu_peak_height(n = 100, add.height = TRUE, add.density = TRUE)
 
 }

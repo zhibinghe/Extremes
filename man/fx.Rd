@@ -17,3 +17,6 @@ right-tail probability of peak extent
 \description{
 Theoretical tail cdf of peak extent
 }
+\seealso{
+[fx]
+}

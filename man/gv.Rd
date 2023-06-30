@@ -7,6 +7,8 @@
 Gv(V, u)
 }
 \arguments{
+\item{V}{vector of quantiles}
+
 \item{u}{a user-specified thereshold value.}
 }
 \value{
@@ -14,4 +16,7 @@ right-tail probability of peak height
 }
 \description{
 Theoretical tail cdf of peak mass
+}
+\seealso{
+[gv]
 }

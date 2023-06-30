@@ -32,6 +32,8 @@ simu_peak_detect(
 \item{u}{threshold value}
 
 \item{alpha}{significant level for peak detection}
+
+\item{...}{arguments in \code{rnorm}, such as mean, sd}
 }
 \value{
 locations of cross points, plots of peak extent and its right-tail probability
@@ -40,7 +42,11 @@ locations of cross points, plots of peak extent and its right-tail probability
 Simulate peak detection based on peak height
 }
 \examples{
-simu_peak_detect(l=1000, loc=c(100,250,400,650,800,900), sigma=c(4,10,15,20,10,2), scale=c(0.4,0.5,1.2,1.8,1.2,1.2), u=0.02)
+loc=c(100,250,400,650,800,900)
+sigma=c(4,10,15,20,10,2)
+scale=c(0.4,0.5,1.2,1.8,1.2,1.2)
+gamma = 4
+simu_peak_detect(l=1000, loc=loc, sigma=sigma, scale=scale, gamma = gamma, u=0.02)
 
 }
 \seealso{

@@ -5,15 +5,14 @@
 #' @param gamma bandwidth of gausian kernel.
 #' @param add.height logical value indicates if peak height should be plotted
 #' @param add.density logical value indicates if density function should be plotted
-#' @import dSTEM
+#' @param ... arguments in \code{rnorm}, such as mean, sd
 #' @returns location of peaks, plots of peak height and its density
 #' @examples
-#' library(dSTEM)
 #' simu_peak_height(n = 100, add.height = TRUE, add.density = TRUE)
 #'
 simu_peak_height = function(n = 100, gamma = 4, add.height = TRUE, add.density = TRUE, ...) {
   # generate smoothed gaussian process
-  noise <- rnorm(n,...)
+  noise <- rnorm(n, ...)
   sdata <- smth.gau(noise, gamma=gamma)
   std <- sqrt(1/(2*gamma*sqrt(pi))) # standard deviation
   sdata <- sdata/std
@@ -23,8 +22,8 @@ simu_peak_height = function(n = 100, gamma = 4, add.height = TRUE, add.density =
   if(add.height) {
     plot(sdata, type="l", lwd=2, xlab="", ylab="", main = "Peak Height")
     abline(h=0, lty=2)
-    points(peaks, sdata[peaks], pch=21, bg="red", col="red")
-    shape::Arrows(peaks, rep(0,length(peaks)), peaks, sdata[peaks]-0.01, code=3, col="blue",
+    points(peaks0, sdata[peaks0], pch=21, bg="red", col="red")
+    shape::Arrows(peaks0, rep(0,length(peaks0)), peaks0, sdata[peaks0]-0.01, code=3, col="blue",
                   arr.type="triangle",arr.adj=1,lwd=2, arr.width=0.2,arr.length=0.15)
   }
   if(add.density) {
@@ -126,6 +125,7 @@ fx = function(x, u) {
 #'
 #' @inheritParams fx
 #' @inheritParams fx
+#' @seealso [fx]
 #' @returns right-tail probability of peak extent
 #'
 Fx = function(x, u) {
@@ -164,8 +164,9 @@ gv = function(v, u) {
 
 #' Theoretical tail cdf of peak mass
 #'
+#' @param V vector of quantiles
 #' @inheritParams fx
-#' @inheritParams fx
+#' @seealso [gv]
 #' @returns right-tail probability of peak height
 #'
 Gv = function(V, u) {
@@ -199,7 +200,7 @@ Gv = function(V, u) {
 #' @param add.extent logical value indicates if plot the peak extent
 #' @inheritParams simu_peak_height
 #' @param add.cdf logical value indicates if plot the right tail probability distribution
-#' @import dSTEM
+#' @param ... arguments in \code{rnorm}, such as mean, sd
 #' @returns locations of cross points, plots of peak extent and its right-tail probability
 #' @seealso [cross_point], [search_endpoint]
 #' @examples
@@ -279,11 +280,15 @@ auc = function(x, u, data){
 #' @inheritParams simu_peak_height
 #' @inheritParams simu_peak_extent
 #' @param alpha significant level for peak detection
-#' @import dSTEM
+#' @param ... arguments in \code{rnorm}, such as mean, sd
 #' @returns locations of cross points, plots of peak extent and its right-tail probability
 #' @seealso [cross_point], [search_endpoint]
 #' @examples
-#' simu_peak_detect(l=1000, loc=c(100,250,400,650,800,900), sigma=c(4,10,15,20,10,2), scale=c(0.4,0.5,1.2,1.8,1.2,1.2), u=0.02)
+#' loc=c(100,250,400,650,800,900)
+#' sigma=c(4,10,15,20,10,2)
+#' scale=c(0.4,0.5,1.2,1.8,1.2,1.2)
+#' gamma = 4
+#' simu_peak_detect(l=1000, loc=loc, sigma=sigma, scale=scale, gamma = gamma, u=0.02)
 #'
 simu_peak_detect = function(data = NULL, l, loc, sigma, scale, gamma=4, u, alpha=0.05, ...) {
   if (is.null(data)) {

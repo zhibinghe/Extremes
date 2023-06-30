@@ -2,10 +2,9 @@ Package: Extremes
 Type: Package
 Title: Detect extreme signals based on peak height, cluster extent and mass of random fields
 Version: 1.1.0
-Author: Zhibing He
+Author: Zhibing He and Dan Cheng
 Maintainer: Zhibing He <zhibingh@asu.edu>
 Description: Simulate Gaussian random process (1D), compute the peak height, cluster extent and cluster mass. Detecct the extreme signals based on different measures.
-Imports: dSTEM
 Suggests: pracma, shape
 License: GPL-3
 Encoding: UTF-8
