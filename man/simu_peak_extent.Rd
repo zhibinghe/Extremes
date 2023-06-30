@@ -6,8 +6,9 @@
 \usage{
 simu_peak_extent(
   n = 100,
-  gamma = 4,
+  gam = 4,
   u,
+  u.th = 3.5,
   add.extent = TRUE,
   add.density = TRUE,
   add.cdf = TRUE,
@@ -17,9 +18,11 @@ simu_peak_extent(
 \arguments{
 \item{n}{number of data points from a Gaussian distribution.}
 
-\item{gamma}{bandwidth of gausian kernel.}
+\item{gam}{bandwidth of gausian kernel.}
 
 \item{u}{threshold value}
+
+\item{u.th}{threshold value for varifying the theoretical distribution of peak extent, supposed to be larger than 3}
 
 \item{add.extent}{logical value indicates if plot the peak extent}
 
@@ -36,7 +39,7 @@ locations of cross points, plots of peak extent and its right-tail probability
 Find the cross points of data sequence and a horizontal line
 }
 \examples{
-simu_peak_extent(n = 100, u = 3.5)
+simu_peak_extent(n = 200, u = 1)
 
 }
 \seealso{

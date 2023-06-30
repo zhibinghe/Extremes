@@ -4,12 +4,12 @@
 \alias{smth.gau}
 \title{Smoothing data using Gaussian kernel}
 \usage{
-smth.gau(x, gamma)
+smth.gau(x, gam)
 }
 \arguments{
 \item{x}{numeric vector of values to smooth}
 
-\item{gamma}{bandwidth of Gaussian kernel}
+\item{gam}{bandwidth of Gaussian kernel}
 }
 \value{
 vector of smoothed values
@@ -18,6 +18,6 @@ vector of smoothed values
 Smoothing data using Gaussian kernel
 }
 \examples{
-smth.gau(x=rnorm(1000), gamma=20)
+smth.gau(x=rnorm(1000), gam=20)
 
 }

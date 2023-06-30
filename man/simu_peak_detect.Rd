@@ -10,7 +10,7 @@ simu_peak_detect(
   loc,
   sigma,
   scale,
-  gamma = 4,
+  gam = 4,
   u,
   alpha = 0.05,
   ...
@@ -27,7 +27,7 @@ simu_peak_detect(
 
 \item{scale}{a vector of scale for each peak, same length as \code{loc}}
 
-\item{gamma}{bandwidth of gausian kernel.}
+\item{gam}{bandwidth of gausian kernel.}
 
 \item{u}{threshold value}
 
@@ -45,8 +45,8 @@ Simulate peak detection based on peak height
 loc=c(100,250,400,650,800,900)
 sigma=c(4,10,15,20,10,2)
 scale=c(0.4,0.5,1.2,1.8,1.2,1.2)
-gamma = 4
-simu_peak_detect(l=1000, loc=loc, sigma=sigma, scale=scale, gamma = gamma, u=0.02)
+gam = 4
+simu_peak_detect(l=1000, loc=loc, sigma=sigma, scale=scale, gam = gam, u=0.02)
 
 }
 \seealso{

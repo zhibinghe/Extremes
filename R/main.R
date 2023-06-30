@@ -26,21 +26,21 @@ conv = function(u, v, shape = c("same","full")){
 #' Smoothing data using Gaussian kernel
 #'
 #' @param x numeric vector of values to smooth
-#' @param gamma bandwidth of Gaussian kernel
+#' @param gam bandwidth of Gaussian kernel
 #'
 #' @return vector of smoothed values
 #' @export
 #' @examples
-#' smth.gau(x=rnorm(1000), gamma=20)
+#' smth.gau(x=rnorm(1000), gam=20)
 #'
-smth.gau = function(x, gamma){
+smth.gau = function(x, gam){
   # Gaussian kernel
   .kern = function(x,v=1){
     temp = exp(-x^2/(2*v^2))
     return(temp/sum(temp))}
-  k = ifelse(2*6*gamma <= 0.9*length(x),6,floor(0.9*length(x)/(2*gamma))) #6sigma
-  Lwindow = (-k*gamma):(k*gamma)
-  w = .kern(Lwindow,v=gamma)
+  k = ifelse(2*6*gam <= 0.9*length(x),6,floor(0.9*length(x)/(2*gam))) #6sigma
+  Lwindow = (-k*gam):(k*gam)
+  w = .kern(Lwindow,v=gam)
   sx = conv(x,w,"same")
   # adjusted weights
   adj.w = function(w){
@@ -84,7 +84,7 @@ which.peaks = function(x, partial=FALSE, decreasing=FALSE){
 #'
 #' Simulate the peak height and its density of the smoothed Gaussian process
 #' @param n number of data points from a Gaussian distribution.
-#' @param gamma bandwidth of gausian kernel.
+#' @param gam bandwidth of gausian kernel.
 #' @param add.height logical value indicates if peak height should be plotted
 #' @param add.density logical value indicates if density function should be plotted
 #' @param ... arguments in \code{rnorm}, such as mean, sd
@@ -93,11 +93,11 @@ which.peaks = function(x, partial=FALSE, decreasing=FALSE){
 #' @examples
 #' simu_peak_height(n = 100, add.height = TRUE, add.density = TRUE)
 #'
-simu_peak_height = function(n = 100, gamma = 4, add.height = TRUE, add.density = TRUE, ...) {
+simu_peak_height = function(n = 100, gam = 4, add.height = TRUE, add.density = TRUE, ...) {
   # generate smoothed gaussian process
   noise <- rnorm(n, ...)
-  sdata <- smth.gau(noise, gamma=gamma)
-  std <- sqrt(1/(2*gamma*sqrt(pi))) # standard deviation
+  sdata <- smth.gau(noise, gam=gam)
+  std <- sqrt(1/(2*gam*sqrt(pi))) # standard deviation
   sdata <- sdata/std
   # detect positive peaks
   peaks0 <- which.peaks(sdata)
@@ -110,17 +110,18 @@ simu_peak_height = function(n = 100, gamma = 4, add.height = TRUE, add.density =
                   arr.type="triangle",arr.adj=1,lwd=2, arr.width=0.2,arr.length=0.15)
   }
   if(add.density) {
-    sdata <- smth.gau(rnorm(1000000,...), gamma)
+    sdata <- smth.gau(rnorm(1000000,...), gam)
     sdata <- sdata/std # standardize
     peaks <- which.peaks(sdata)
     height <- sdata[peaks]
-    hist(height, breaks=60, freq=FALSE, xlab="", ylab="", main="", xlim=c(-3,4), ylim=c(0,0.5))
-    # lines(density(height), lwd=2, col="black")
     # theoretical peak height density
     f.peak = function(x)
       sqrt(2/3)*dnorm(sqrt(3/2)*x) + sqrt(2*pi/3)*x*dnorm(x)*pnorm(x/sqrt(2))
     x <- seq(-3, 4, length.out=1000)
-    lines(x, f.peak(x), lwd=2, col="red", lty=1)
+    value.th <- f.peak(x)
+    ylim <- c(0, max(value.th, hist(height, freq=FALSE)$density)) * 1.2
+    hist(height, breaks=60, freq=FALSE, xlab="", ylab="", main="", xlim=c(-3,4), ylim=c(0,0.5))
+    lines(x, value.th, lwd=2, col="red", lty=1)
     legend("topleft",legend = c("simulated dist.", "theoretical dist."),
            lwd = c(2,2), col = c("black","red"), bty = "n")
   }
@@ -189,12 +190,13 @@ search_endpoint = function(x, u, data){
 #'
 #' @param x vector of quantiles
 #' @inheritParams cross_point
+#' @param gam bandwidth of Gaussian kernel
 #' @returns density of peak extent
 #' @export
 #'
-fx = function(x, u) {
-  lam1 <- 1/(2 * gamma^2)
-  lam2 <- 3/(4 * gamma^4)
+fx = function(x, u, gam) {
+  lam1 <- 1/(2 * gam^2)
+  lam2 <- 3/(4 * gam^4)
   if(lam1<=0 | lam2<=0) stop("lambda1 and lambda2 must be postive numbers")
   det <- lam2 - lam1^2
   den <- lam2*x^4 - 16*lam1*x^2+64
@@ -212,13 +214,14 @@ fx = function(x, u) {
 #'
 #' @inheritParams fx
 #' @inheritParams fx
-#' @seealso [fx]
+#' @inheritParams fx
+#' @seealso fx
 #' @returns right-tail probability of peak extent
 #' @export
 #'
-Fx = function(x, u) {
-  lam1 <- 1/(2 * gamma^2)
-  lam2 <- 3/(4 * gamma^4)
+Fx = function(x, u, gam) {
+  lam1 <- 1/(2 * gam^2)
+  lam2 <- 3/(4 * gam^4)
   if(lam1<=0 | lam2<=0) stop("lambda1 and lambda2 must be postive numbers")
   det <- lam2 - lam1^2
   den <- lam2*x^4 - 16*lam1*x^2 + 64
@@ -234,12 +237,13 @@ Fx = function(x, u) {
 #'
 #' @inheritParams fx
 #' @inheritParams fx
+#' @inheritParams fx
 #' @returns density of peak mass
 #' @export
 #'
-gv = function(v, u) {
-  lam1 <- 1/(2 * gamma^2)
-  lam2 <- 3/(4 * gamma^4)
+gv = function(v, u, gam) {
+  lam1 <- 1/(2 * gam^2)
+  lam2 <- 3/(4 * gam^4)
   if(lam1<=0 | lam2<=0) stop("lambda1 and lambda2 must be postive numbers")
   det <- lam2 - lam1^2
   p1 <- sqrt(lam2/(2*pi))*(1-pnorm(sqrt(lam2/det)*u))
@@ -255,13 +259,14 @@ gv = function(v, u) {
 #'
 #' @param V vector of quantiles
 #' @inheritParams fx
+#' @inheritParams fx
 #' @seealso [gv]
 #' @returns right-tail probability of peak height
 #' @export
 #'
-Gv = function(V, u) {
-  lam1 <- 1/(2 * gamma^2)
-  lam2 <- 3/(4 * gamma^4)
+Gv = function(V, u, gam) {
+  lam1 <- 1/(2 * gam^2)
+  lam2 <- 3/(4 * gam^4)
   Z <- rnorm(5000)
   f1 = function(x) {
     mZ <- abs(sqrt(lam2-lam1^2)*Z - lam1*x)
@@ -287,6 +292,7 @@ Gv = function(V, u) {
 #' @inheritParams  simu_peak_height
 #' @inheritParams  simu_peak_height
 #' @param u threshold value
+#' @param u.th threshold value for varifying the theoretical distribution of peak extent, supposed to be larger than 3
 #' @param add.extent logical value indicates if plot the peak extent
 #' @inheritParams simu_peak_height
 #' @param add.cdf logical value indicates if plot the right tail probability distribution
@@ -295,18 +301,19 @@ Gv = function(V, u) {
 #' @export
 #' @seealso [cross_point], [search_endpoint]
 #' @examples
-#' simu_peak_extent(n = 100, u = 3.5)
+#' simu_peak_extent(n = 200, u = 1)
 #'
-simu_peak_extent = function(n = 100, gamma = 4, u, add.extent = TRUE,
+simu_peak_extent = function(n = 100, gam = 4, u, u.th = 3.5, add.extent = TRUE,
                             add.density = TRUE, add.cdf = TRUE, ...) {
   noise <- rnorm(n,...)
-  sdata <- smth.gau(noise, gamma=gamma)
-  std <- sqrt(1/(2*gamma*sqrt(pi))) # standard deviation
+  sdata <- smth.gau(noise, gam=gam)
+  std <- sqrt(1/(2*gam*sqrt(pi))) # standard deviation
   sdata <- sdata/std
   crossx <- cross_point(sdata, u, n=10000)
+  if (is.null(crossx)) stop("u is too large, see the plot of (smoothed) data")
   # plots
   peaks <- which.peaks(sdata)
-  peaks = peaks[sdata[peaks]>=u]
+  peaks <- peaks[sdata[peaks]>=u]
   if (add.extent) {
     plot(sdata, type="l", lwd=2, xlab="", ylab="")
     abline(h=0)
@@ -319,8 +326,9 @@ simu_peak_extent = function(n = 100, gamma = 4, u, add.extent = TRUE,
            arr.width=0.15, arr.length=0.1)
   }
   if (add.density | add.cdf) {
-    data <- rnorm(1000000,...)
-    sdata <- smth.gau(data, gamma)
+    u <- u.th
+    noise <- rnorm(10000000,...)
+    sdata <- smth.gau(noise, gam)
     sdata <- sdata/sd(sdata) # standardize
     peaks <- which.peaks(sdata)
     upeaks <- peaks[sdata[peaks]>u]
@@ -328,16 +336,18 @@ simu_peak_extent = function(n = 100, gamma = 4, u, add.extent = TRUE,
     tail <- ecdf.tail(width)
     if(add.cdf) {
       vx <- seq(0, 15, 0.1)
-      plot(vx, sapply(vx,Fx, u=u), ylim=c(0,1), col="red", lwd=2, type="l",
-           xlab="Excursion Extent",ylab="Tail Probability", main=paste("u = ",u,sep=""))
+      plot(vx, sapply(vx,Fx, u=u, gam=gam), ylim=c(0,1), col="red", lwd=2, type="l",
+           xlab="Excursion Extent", ylab="Tail Probability", main=paste("u = ", u, sep=""))
       lines(smooth.spline(tail[,1], tail[,2], df=10), lwd=2, col="black")
       legend("topright", legend=c("theoretical dist.", "simulated dist."),
-             col=c("red","black"),lwd=rep(2,2), bty="n")
+             col=c("red","black"), lwd=rep(2,2), bty="n")
     }
     if(add.extent) {
-      hist(width, breaks=15, freq=FALSE, xlab="", ylab="", main="")
       vx <- seq(0, 15, 0.1)
-      lines(vx, fx(vx, u=u), lwd=2, col="red", lty=1)
+      value.th <- fx(vx, u=u,gam=gam)
+      ylim <- c(0, max(value.th, hist(width, freq=FALSE)$density)) * 1.2
+      hist(width, ylim=ylim, freq=FALSE, xlab="", ylab="", main="")
+      lines(vx, value.th, lwd=2, col="red", lty=1)
       legend("topright",legend = c("simulated dist.", "theoretical dist."),
              lwd = c(2,2), col = c("black","red"), bty = "n")
     }
@@ -380,10 +390,10 @@ auc = function(x, u, data){
 #' loc=c(100,250,400,650,800,900)
 #' sigma=c(4,10,15,20,10,2)
 #' scale=c(0.4,0.5,1.2,1.8,1.2,1.2)
-#' gamma = 4
-#' simu_peak_detect(l=1000, loc=loc, sigma=sigma, scale=scale, gamma = gamma, u=0.02)
+#' gam = 4
+#' simu_peak_detect(l=1000, loc=loc, sigma=sigma, scale=scale, gam = gam, u=0.02)
 #'
-simu_peak_detect = function(data = NULL, l, loc, sigma, scale, gamma=4, u, alpha=0.05, ...) {
+simu_peak_detect = function(data = NULL, l, loc, sigma, scale, gam=4, u, alpha=0.05, ...) {
   if (is.null(data)) {
     gen.signal = function(l, loc, sigma, scale){
       out <- rep(0, l)
@@ -397,7 +407,7 @@ simu_peak_detect = function(data = NULL, l, loc, sigma, scale, gamma=4, u, alpha
     signal <- gen.signal(l=l, loc=loc, sigma=sigma, scale=scale)
     noise <- rnorm(l, sd=0.02)
     data <- signal + noise
-    sdata <- smth.gau(data, gamma)
+    sdata <- smth.gau(data, gam)
     plot(data, type="l", col="darkseagreen3", xlab="", ylab="")
     abline(h=0)
     lines(signal,col="red",lwd=2)
@@ -412,7 +422,7 @@ simu_peak_detect = function(data = NULL, l, loc, sigma, scale, gamma=4, u, alpha
     legend("topleft", legend=c("original data","smoothed data"), lwd = rep(2,2),
            col=c("darkseagreen3", "black"), bty="n")
   }
-  sdata <- smth.gau(data, gamma)
+  sdata <- smth.gau(data, gam)
   # plot data
   col1 <- "cyan"
   col2 <- "blue"
@@ -430,7 +440,7 @@ simu_peak_detect = function(data = NULL, l, loc, sigma, scale, gamma=4, u, alpha
   cross1 <- crossx[seq(1,length(crossx),2)]
   cross2 = crossx[seq(2,length(crossx),2)]
   width <- sapply(lapply(upeaks, search_endpoint, u=u, data=sdata), sum)
-  pvalue <- sapply(width, Fx, u=u)
+  pvalue <- sapply(width, Fx, u=u, gam=gam)
   true.peaks <- upeaks[pvalue <= alpha]
   plot(sdata, type="l", col="black", lwd=2, xlab="", ylab="")
   abline(h=0)
@@ -453,15 +463,15 @@ simu_peak_detect = function(data = NULL, l, loc, sigma, scale, gamma=4, u, alpha
   area <- sapply(upeaks, auc, u=u, data=sdata)
   upeaks <- upeaks[!duplicated(area)]
   area <- area[!duplicated(area)]
-  pvalue <- sapply(area, Gv, u=u)
+  pvalue <- sapply(area, Gv, u=u, gam=gam)
   true.peaks <- upeaks[which.min(pvalue)]
   peaks_dif <- setdiff(upeaks, true.peaks)
   shade.area = function(data, xmn, xmx, n=10000, col="grey"){
     fit <- approx(1:length(data), data, n=n)
     xmn.ind <- which(fit$x==xmn)
     xmx.ind <- which(fit$x==xmx)
-    if (fit$y[xmn.ind] < u) xmn.ind = xmn.ind + 1
-    if (fit$y[xmx.ind] < u) xmx.ind = xmx.ind - 1
+    if (fit$y[xmn.ind] < u) xmn.ind <- xmn.ind + 1
+    if (fit$y[xmx.ind] < u) xmx.ind <- xmx.ind - 1
     shade.x <- fit$x[xmn.ind:xmx.ind]
     shade.y <- fit$y[xmn.ind:xmx.ind]
     polygon(shade.x, shade.y, col=col)

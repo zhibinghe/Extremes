@@ -4,18 +4,12 @@
 \alias{simu_peak_height}
 \title{Gaussiann process peak height}
 \usage{
-simu_peak_height(
-  n = 100,
-  gamma = 4,
-  add.height = TRUE,
-  add.density = TRUE,
-  ...
-)
+simu_peak_height(n = 100, gam = 4, add.height = TRUE, add.density = TRUE, ...)
 }
 \arguments{
 \item{n}{number of data points from a Gaussian distribution.}
 
-\item{gamma}{bandwidth of gausian kernel.}
+\item{gam}{bandwidth of gausian kernel.}
 
 \item{add.height}{logical value indicates if peak height should be plotted}
 

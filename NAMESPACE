@@ -14,8 +14,8 @@ export(simu_peak_extent)
 export(simu_peak_height)
 export(smth.gau)
 export(which.peaks)
-   importFrom("graphics", "abline", "hist", "legend", "lines", "plot",
-               "points", "polygon")
-    importFrom("stats", "approx", "dnorm", "ecdf", "fft", "integrate",
-               "pnorm", "rnorm", "sd", "smooth.spline")
-    importFrom("utils", "tail")
+importFrom("graphics", "abline", "hist", "legend", "lines", "plot",
+           "points", "polygon")
+importFrom("stats", "approx", "dnorm", "ecdf", "fft", "integrate",
+           "pnorm", "rnorm", "sd", "smooth.spline")
+importFrom("utils", "tail")

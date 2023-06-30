@@ -4,12 +4,14 @@
 \alias{Gv}
 \title{Theoretical tail cdf of peak mass}
 \usage{
-Gv(V, u)
+Gv(V, u, gam)
 }
 \arguments{
 \item{V}{vector of quantiles}
 
 \item{u}{a user-specified thereshold value.}
+
+\item{gam}{bandwidth of Gaussian kernel}
 }
 \value{
 right-tail probability of peak height

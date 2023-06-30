@@ -4,12 +4,14 @@
 \alias{Fx}
 \title{Theoretical tail cdf of peak extent}
 \usage{
-Fx(x, u)
+Fx(x, u, gam)
 }
 \arguments{
 \item{x}{vector of quantiles}
 
 \item{u}{a user-specified thereshold value.}
+
+\item{gam}{bandwidth of Gaussian kernel}
 }
 \value{
 right-tail probability of peak extent
@@ -18,5 +20,5 @@ right-tail probability of peak extent
 Theoretical tail cdf of peak extent
 }
 \seealso{
-[fx]
+fx
 }
