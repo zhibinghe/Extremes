@@ -9,7 +9,7 @@ Gv(V, u, gam)
 \arguments{
 \item{V}{vector of quantiles}
 
-\item{u}{a user-specified thereshold value.}
+\item{u}{a user-specified thereshold value}
 
 \item{gam}{bandwidth of Gaussian kernel}
 }
@@ -20,5 +20,5 @@ right-tail probability of peak height
 Theoretical tail cdf of peak mass
 }
 \seealso{
-[gv]
+\code{g_v}
 }

@@ -9,7 +9,7 @@ search_endpoint(x, u, data)
 \arguments{
 \item{x}{location of a peak}
 
-\item{u}{a user-specified thereshold value.}
+\item{u}{a user-specified thereshold value}
 
 \item{data}{a numerical vector}
 }

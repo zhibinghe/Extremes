@@ -2,14 +2,14 @@
 % Please edit documentation in R/main.R
 \name{auc}
 \alias{auc}
-\title{Theoretical pdf of peak height}
+\title{Calculate the area under a curve}
 \usage{
 auc(x, u, data)
 }
 \arguments{
 \item{x}{location of a peak}
 
-\item{u}{a user-specified thereshold value.}
+\item{u}{a user-specified thereshold value}
 
 \item{data}{a numerical vector}
 }
@@ -17,8 +17,8 @@ auc(x, u, data)
 a vector of area under the curve
 }
 \description{
-Theoretical pdf of peak height
+Calculate the area under a curve
 }
 \seealso{
-[search_endpoint]
+\code{search_endpoint}
 }

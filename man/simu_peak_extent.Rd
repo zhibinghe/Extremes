@@ -2,7 +2,7 @@
 % Please edit documentation in R/main.R
 \name{simu_peak_extent}
 \alias{simu_peak_extent}
-\title{Find the cross points of data sequence and a horizontal line}
+\title{Gaussiann process peak extent}
 \usage{
 simu_peak_extent(
   n = 100,
@@ -36,7 +36,7 @@ simu_peak_extent(
 locations of cross points, plots of peak extent and its right-tail probability
 }
 \description{
-Find the cross points of data sequence and a horizontal line
+Simulate the peak extent and its density of the smoothed Gaussian process
 }
 \examples{
 simu_peak_extent(n = 200, u = 1)

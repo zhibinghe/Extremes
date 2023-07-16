@@ -2,7 +2,7 @@
 % Please edit documentation in R/main.R
 \name{simu_peak_detect}
 \alias{simu_peak_detect}
-\title{Simulate peak detection based on peak height}
+\title{Peak detection based on peak height, extent and mass}
 \usage{
 simu_peak_detect(
   data = NULL,
@@ -13,6 +13,7 @@ simu_peak_detect(
   gam = 4,
   u,
   alpha = 0.05,
+  by = c("height", "extent", "mass"),
   ...
 )
 }
@@ -33,20 +34,22 @@ simu_peak_detect(
 
 \item{alpha}{significant level for peak detection}
 
+\item{by}{detect peaks by which, a chracter of \code{height}, \code{extent} or \code{mass}}
+
 \item{...}{arguments in \code{rnorm}, such as mean, sd}
 }
 \value{
-locations of cross points, plots of peak extent and its right-tail probability
+locations of significant peaks by \code{height}, \code{extent} and \code{mass}
 }
 \description{
-Simulate peak detection based on peak height
+Peak detection based on peak height, extent and mass
 }
 \examples{
 loc=c(100,250,400,650,800,900)
 sigma=c(4,10,15,20,10,2)
 scale=c(0.4,0.5,1.2,1.8,1.2,1.2)
 gam = 4
-simu_peak_detect(l=1000, loc=loc, sigma=sigma, scale=scale, gam = gam, u=0.02)
+simu_peak_detect(l=1000, loc=loc, sigma=sigma, scale=scale, gam = gam, u=0.02, by="height")
 
 }
 \seealso{

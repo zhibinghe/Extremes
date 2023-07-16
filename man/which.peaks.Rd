@@ -20,7 +20,7 @@ a vector of locations of local maxima or minima
 Find local maxima and local minima of data sequence
 }
 \examples{
-a = 100:1
+a <- 100:1
 which.peaks(a*sin(a/3))
 
 }

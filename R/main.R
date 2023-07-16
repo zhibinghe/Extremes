@@ -1,56 +1,3 @@
-#' Compute convolution function using FFT
-#' @description Compute convolution function using FFT, similar to \code{'conv'} in matlab
-#' @references Matlab document on \code{'conv'}: \url{https://www.mathworks.com/help/matlab/ref/conv.html}
-#' @param u numerical vector
-#' @param v numerical vector, don't need to have the same length as \code{u}
-#' @param shape if 'same', return central part of the convolution and has the same size as \code{u};
-#'              otherwise return the whole sequence of size \eqn{lenth(u)+length(v)-1}.
-#'
-#' @return a vector of convolution, as specified by shape.
-#' @export
-#' @examples
-#' u = c(-1,2,3,-2,0,1,2)
-#' v = c(2,4,-1,1)
-#' w = conv(u,v,'same')
-conv = function(u, v, shape = c("same","full")){
-  shape <- match.arg(shape)
-  lx <- length(u)
-  ly <- length(v)
-  n <- lx + ly - 1
-  w <- fft(fft(c(u,rep(0,n-lx))) * fft(c(v,rep(0,n-ly))),inverse=TRUE)/n
-  w <- Re(w)
-  if(shape=="same") w <- w[floor(ly/2+1):(floor(ly/2)+lx)]
-  return(w)
-}
-
-#' Smoothing data using Gaussian kernel
-#'
-#' @param x numeric vector of values to smooth
-#' @param gam bandwidth of Gaussian kernel
-#'
-#' @return vector of smoothed values
-#' @export
-#' @examples
-#' smth.gau(x=rnorm(1000), gam=20)
-#'
-smth.gau = function(x, gam){
-  # Gaussian kernel
-  .kern = function(x,v=1){
-    temp = exp(-x^2/(2*v^2))
-    return(temp/sum(temp))}
-  k = ifelse(2*6*gam <= 0.9*length(x),6,floor(0.9*length(x)/(2*gam))) #6sigma
-  Lwindow = (-k*gam):(k*gam)
-  w = .kern(Lwindow,v=gam)
-  sx = conv(x,w,"same")
-  # adjusted weights
-  adj.w = function(w){
-    hw = floor(length(w)/2)
-    a = cumsum(w)[(hw+1):length(w)]
-    return(c(a,rep(1,length(x)-2*length(a)),rev(a)))
-  }
-  return(sx/adj.w(w))
-}
-
 #' Find local maxima and local minima of data sequence
 #'
 #' @param x numerical vector contains local maxima (minima)
@@ -61,7 +8,7 @@ smth.gau = function(x, gam){
 #' @export
 #'
 #' @examples
-#' a = 100:1
+#' a <- 100:1
 #' which.peaks(a*sin(a/3))
 #'
 which.peaks = function(x, partial=FALSE, decreasing=FALSE){
@@ -130,10 +77,9 @@ simu_peak_height = function(n = 100, gam = 4, add.height = TRUE, add.density = T
 
 #' Find the cross points of data sequence and a horizontal line
 #'
-#'
 #' @param data a vector
-#' @param u a user-specified thereshold value.
-#' @param n number to data points to fit the cureve of \code{data}.
+#' @param u a user-specified thereshold value
+#' @param n number to data points to fit the cureve of \code{data}
 #' @export
 #' @returns locations of cross points
 #'
@@ -156,12 +102,11 @@ cross_point = function(data, u, n=10000) {
 #'
 #' @param x a numerical vector
 #' @returns a matrix with two columns of x and tail probability \eqn{F(x)}
-#' @export
 #'
-ecdf.tail = function(x){
-  fecdf = ecdf(x)
-  x = sort(x)
-  cbind(x,1 - fecdf(x))
+ecdf.tail = function(x) {
+  fecdf <- ecdf(x)
+  x <- sort(x)
+  cbind(x, 1 - fecdf(x))
 }
 
 #' Search endpoints of a peak extent
@@ -188,13 +133,13 @@ search_endpoint = function(x, u, data){
 
 #' Theoretical pdf of peak extent
 #'
-#' @param x vector of quantiles
+#' @param x vector of quantities
 #' @inheritParams cross_point
 #' @param gam bandwidth of Gaussian kernel
 #' @returns density of peak extent
 #' @export
 #'
-fx = function(x, u, gam) {
+f_x = function(x, u, gam) {
   lam1 <- 1/(2 * gam^2)
   lam2 <- 3/(4 * gam^4)
   if(lam1<=0 | lam2<=0) stop("lambda1 and lambda2 must be postive numbers")
@@ -212,10 +157,10 @@ fx = function(x, u, gam) {
 
 #' Theoretical tail cdf of peak extent
 #'
-#' @inheritParams fx
-#' @inheritParams fx
-#' @inheritParams fx
-#' @seealso fx
+#' @inheritParams f_x
+#' @inheritParams f_x
+#' @inheritParams f_x
+#' @seealso \code{f_x}
 #' @returns right-tail probability of peak extent
 #' @export
 #'
@@ -235,13 +180,13 @@ Fx = function(x, u, gam) {
 
 #' Theoretical pdf of peak mass
 #'
-#' @inheritParams fx
-#' @inheritParams fx
-#' @inheritParams fx
+#' @param v vector of quantities
+#' @inheritParams f_x
+#' @inheritParams f_x
 #' @returns density of peak mass
 #' @export
 #'
-gv = function(v, u, gam) {
+g_v = function(v, u, gam) {
   lam1 <- 1/(2 * gam^2)
   lam2 <- 3/(4 * gam^4)
   if(lam1<=0 | lam2<=0) stop("lambda1 and lambda2 must be postive numbers")
@@ -258,9 +203,9 @@ gv = function(v, u, gam) {
 #' Theoretical tail cdf of peak mass
 #'
 #' @param V vector of quantiles
-#' @inheritParams fx
-#' @inheritParams fx
-#' @seealso [gv]
+#' @inheritParams f_x
+#' @inheritParams f_x
+#' @seealso \code{g_v}
 #' @returns right-tail probability of peak height
 #' @export
 #'
@@ -287,8 +232,9 @@ Gv = function(V, u, gam) {
   return(temp2/temp1)
 }
 
-#' Find the cross points of data sequence and a horizontal line
+#' Gaussiann process peak extent
 #'
+#' Simulate the peak extent and its density of the smoothed Gaussian process
 #' @inheritParams  simu_peak_height
 #' @inheritParams  simu_peak_height
 #' @param u threshold value
@@ -355,16 +301,16 @@ simu_peak_extent = function(n = 100, gam = 4, u, u.th = 3.5, add.extent = TRUE,
   return(crossx)
 }
 
-#' Theoretical pdf of peak height
+#' Calculate the area under a curve
 #'
 #' @inheritParams search_endpoint
 #' @inheritParams search_endpoint
 #' @inheritParams search_endpoint
 #' @returns a vector of area under the curve
 #' @export
-#' @seealso [search_endpoint]
+#' @seealso \code{search_endpoint}
 #'
-auc = function(x, u, data){
+auc = function(x, u, data) {
   endpoints <- search_endpoint(x, u, data)
   temp <- (x-round(endpoints[1])) : (x+round(endpoints[2]))
   traparea <- pracma::trapz(x=temp, y=data[temp])- u *(tail(temp,1)-temp[1])
@@ -372,7 +318,7 @@ auc = function(x, u, data){
   return(traparea)
 }
 
-#' Simulate peak detection based on peak height
+#' Peak detection based on peak height, extent and mass
 #'
 #' @param data a data sequence, if not NULL, other parameters generating signal will not be used
 #' @param l length of simulated data sequence
@@ -382,8 +328,9 @@ auc = function(x, u, data){
 #' @inheritParams simu_peak_height
 #' @inheritParams simu_peak_extent
 #' @param alpha significant level for peak detection
+#' @param by detect peaks by which, a chracter of \code{height}, \code{extent} or \code{mass}
 #' @param ... arguments in \code{rnorm}, such as mean, sd
-#' @returns locations of cross points, plots of peak extent and its right-tail probability
+#' @returns locations of significant peaks by \code{height}, \code{extent} and \code{mass}
 #' @export
 #' @seealso [cross_point], [search_endpoint]
 #' @examples
@@ -391,9 +338,10 @@ auc = function(x, u, data){
 #' sigma=c(4,10,15,20,10,2)
 #' scale=c(0.4,0.5,1.2,1.8,1.2,1.2)
 #' gam = 4
-#' simu_peak_detect(l=1000, loc=loc, sigma=sigma, scale=scale, gam = gam, u=0.02)
+#' simu_peak_detect(l=1000, loc=loc, sigma=sigma, scale=scale, gam = gam, u=0.02, by="height")
 #'
-simu_peak_detect = function(data = NULL, l, loc, sigma, scale, gam=4, u, alpha=0.05, ...) {
+simu_peak_detect = function(data = NULL, l, loc, sigma, scale, gam=4, u, alpha=0.05,
+                            by=c("height","extent","mass"), ...) {
   if (is.null(data)) {
     gen.signal = function(l, loc, sigma, scale){
       out <- rep(0, l)
@@ -423,69 +371,91 @@ simu_peak_detect = function(data = NULL, l, loc, sigma, scale, gam=4, u, alpha=0
            col=c("darkseagreen3", "black"), bty="n")
   }
   sdata <- smth.gau(data, gam)
+  peaks <- which.peaks(sdata)
+  upeaks <- peaks[sdata[peaks]>u]
   # plot data
   col1 <- "cyan"
   col2 <- "blue"
   # plot peak detection
-  plot(sdata, type="l", col="black", lwd=2, xlab="", ylab="")
-  abline(h=0)
-  peaks <- which.peaks(sdata)
-  abline(h=u, col="deeppink1", lty=2)
-  upeaks <- peaks[sdata[peaks]>u]
-  peaks_dif <- setdiff(peaks, upeaks)
-  points(peaks_dif, sdata[peaks_dif], pch=24, bg=col1, col="black")
-  points(upeaks, sdata[upeaks], pch=22, bg=col2, col="black")
+  if (by == "height") {
+    plot(sdata, type="l", col="black", lwd=2, xlab="", ylab="")
+    abline(h=0, col="grey")
+    abline(h=u, col="deeppink1", lty=2)
+    peaks_dif <- setdiff(peaks, upeaks)
+    points(peaks_dif, sdata[peaks_dif], pch=24, bg=col1, col="black")
+    points(upeaks, sdata[upeaks], pch=22, bg=col2, col="black")
+    legend("topleft", legend=c("candidate peaks","significant peaks"), pch=c(24,22), bg=c(col1,col2), bty="n")
+    return(upeaks)
+  }
   # plot peak extent
-  crossx <- cross_point(sdata, u)
-  cross1 <- crossx[seq(1,length(crossx),2)]
-  cross2 = crossx[seq(2,length(crossx),2)]
-  width <- sapply(lapply(upeaks, search_endpoint, u=u, data=sdata), sum)
-  pvalue <- sapply(width, Fx, u=u, gam=gam)
-  true.peaks <- upeaks[pvalue <= alpha]
-  plot(sdata, type="l", col="black", lwd=2, xlab="", ylab="")
-  abline(h=0)
-  abline(h=u, col="deeppink1", lty=2)
-  peaks_dif <- setdiff(upeaks, true.peaks)
-  cdt.width1 <- cross1[which(upeaks %in% true.peaks)]
-  true.width1 <- cross1[-which(upeaks %in% true.peaks)]
-  cdt.width2 <- cross2[which(upeaks %in% true.peaks)]
-  true.width2 <- cross2[-which(upeaks %in% true.peaks)]
-  shape::Arrows(cdt.width1,u,cdt.width2,u,code=3,col=col1,
-         arr.type="triangle",arr.adj=1,lwd=3,
-         arr.width=0.0,arr.length=0.0)
-  shape::Arrows(true.width1,u,true.width2,u,code=3,col=col2,
-         arr.type="triangle",arr.adj=1,lwd=3,
-         arr.width=0.0,arr.length=0.0)
+  if (by == "extent") {
+    crossx <- cross_point(sdata, u)
+    cross1 <- crossx[seq(1,length(crossx),2)]
+    cross2 <- crossx[seq(2,length(crossx),2)]
+    width <- sapply(lapply(upeaks, search_endpoint, u=u, data=sdata), sum)
+    pvalue <- sapply(width, Fx, u=u, gam=gam)
+    sig.peaks <- upeaks[pvalue <= alpha]
+    plot(sdata, type="l", col="black", lwd=2, xlab="", ylab="")
+    abline(h=0)
+    abline(h=u, col="deeppink1", lty=2)
+    peaks_dif <- setdiff(upeaks, sig.peaks)
+    cdt.width1 <- cross1[which(upeaks %in% sig.peaks)]
+    true.width1 <- cross1[-which(upeaks %in% sig.peaks)]
+    cdt.width2 <- cross2[which(upeaks %in% sig.peaks)]
+    true.width2 <- cross2[-which(upeaks %in% sig.peaks)]
+    shape::Arrows(cdt.width1, u, cdt.width2, u, code=3, col=col2,
+                  arr.type="triangle", arr.adj=1, lwd=3,
+                  arr.width=0, arr.length=0.0)
+    shape::Arrows(true.width1, u, true.width2, u, code=3, col=col1,
+                  arr.type="triangle", arr.adj=1, lwd=3,
+                  arr.width=0, arr.length=0.0)
+    legend("topleft", legend=c("candidate peaks","significant peaks"), lwd=c(2,2),
+           col=c(col1,col2), bty="n")
+    return(sig.peaks)
+  }
   # plot peak mass
-  plot(sdata, type="l", col="black", lwd=2, xlab="", ylab="")
-  abline(h=0)
-  abline(h=u, col="deeppink1", lty=2)
-  area <- sapply(upeaks, auc, u=u, data=sdata)
-  upeaks <- upeaks[!duplicated(area)]
-  area <- area[!duplicated(area)]
-  pvalue <- sapply(area, Gv, u=u, gam=gam)
-  true.peaks <- upeaks[which.min(pvalue)]
-  peaks_dif <- setdiff(upeaks, true.peaks)
-  shade.area = function(data, xmn, xmx, n=10000, col="grey"){
-    fit <- approx(1:length(data), data, n=n)
-    xmn.ind <- which(fit$x==xmn)
-    xmx.ind <- which(fit$x==xmx)
-    if (fit$y[xmn.ind] < u) xmn.ind <- xmn.ind + 1
-    if (fit$y[xmx.ind] < u) xmx.ind <- xmx.ind - 1
-    shade.x <- fit$x[xmn.ind:xmx.ind]
-    shade.y <- fit$y[xmn.ind:xmx.ind]
-    polygon(shade.x, shade.y, col=col)
+  if (by == "mass") {
+    plot(sdata, type="l", col="black", lwd=2, xlab="", ylab="")
+    abline(h=0)
+    abline(h=u, col="deeppink1", lty=2)
+    area <- sapply(upeaks, auc, u=u, data=sdata)
+    upeaks <- upeaks[!duplicated(area)]
+    area <- area[!duplicated(area)]
+    pvalue <- sapply(area, Gv, u=u, gam=gam)
+    sig.peaks <- upeaks[pvalue <= alpha]
+    peaks_dif <- setdiff(upeaks, sig.peaks)
+    shade.area = function(data, xmn, xmx, n=10000, col="grey"){
+      fit <- approx(1:length(data), data, n=n)
+      xmn.ind <- which(fit$x==xmn)
+      xmx.ind <- which(fit$x==xmx)
+      if (fit$y[xmn.ind] < u) xmn.ind <- xmn.ind + 1
+      if (fit$y[xmx.ind] < u) xmx.ind <- xmx.ind - 1
+      shade.x <- fit$x[xmn.ind:xmx.ind]
+      shade.y <- fit$y[xmn.ind:xmx.ind]
+      polygon(shade.x, shade.y, col=col)
+    }
+    for (i in 1:length(peaks_dif)){
+      lx <- 2 * which(upeaks %in% peaks_dif) -1
+      rx <- 2 * which(upeaks %in% peaks_dif)
+      shade.area(sdata, xmn=crossx[lx[i]], xmx=crossx[rx[i]], col=col2)
+    }
+    if (length(sig.peaks) !=0) {
+      for (i in 1:length(sig.peaks)){
+        lx <- 2 * which(upeaks %in% sig.peaks) -1
+        rx <- 2 * which(upeaks %in% sig.peaks)
+        shade.area(sdata, xmn=crossx[lx[i]], xmx=crossx[rx[i]], col=col1)
+      }
+      legend("topleft", legend=c("candidate peaks","significant peaks"), lwd=c(2,2),
+             col=c(col1,col2), bty="n")
+      return(sig.peaks)
+    }
+    else return(NULL)
   }
-  for (i in 1:length(peaks_dif)){
-    lx <- 2 * which(upeaks %in% peaks_dif) -1
-    rx <- 2 * which(upeaks %in% peaks_dif)
-    shade.area(sdata, xmn=crossx[lx[i]], xmx=crossx[rx[i]], col=col2)
-  }
-  for (i in 1:length(true.peaks)){
-    lx <- 2 * which(upeaks %in% true.peaks) -1
-    rx <- 2 * which(upeaks %in% true.peaks)
-    shade.area(sdata, xmn=crossx[lx[i]], xmx=crossx[rx[i]], col=col1)
-  }
-  return(area)
 }
+
+
+
+
+
+
 

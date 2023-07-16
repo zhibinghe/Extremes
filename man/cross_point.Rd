@@ -9,9 +9,9 @@ cross_point(data, u, n = 10000)
 \arguments{
 \item{data}{a vector}
 
-\item{u}{a user-specified thereshold value.}
+\item{u}{a user-specified thereshold value}
 
-\item{n}{number to data points to fit the cureve of \code{data}.}
+\item{n}{number to data points to fit the cureve of \code{data}}
 }
 \value{
 locations of cross points
